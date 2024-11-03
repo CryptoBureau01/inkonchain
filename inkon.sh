@@ -128,14 +128,11 @@ setup() {
     cd node
     print_info "Entered the /root/inkon/node directory."
 
-    # Step 4: Create and configure .env.ink-sepolia file with the required values
-    cat <<END_HERE | sudo tee .env.ink-sepolia > /dev/null
-L1_RPC_URL="https://ethereum-sepolia-rpc.publicnode.com"
-L1_BEACON_URL="https://ethereum-sepolia-beacon-api.publicnode.com"
-END_HERE
+    # Step 4: Update .env.ink-sepolia file with the required values
+    sudo sed -i 's|L1_RPC_URL=.*|L1_RPC_URL="https://ethereum-sepolia-rpc.publicnode.com"|' .env.ink-sepolia
+    sudo sed -i 's|L1_BEACON_URL=.*|L1_BEACON_URL="https://ethereum-sepolia-beacon-api.publicnode.com"|' .env.ink-sepolia
 
-    # .env.ink-sepolia file created and configured successfully
-    print_info ".env.ink-sepolia file created and configured successfully."
+    print_info ".env.ink-sepolia file updated with new L1_RPC_URL and L1_BEACON_URL values."
 
     # Call the uni_menu function to display the menu
     master
