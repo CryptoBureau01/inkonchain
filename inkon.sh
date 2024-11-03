@@ -141,7 +141,15 @@ setup() {
 
 
 
+snapshot() {
+    # Run the setup.sh file and automatically press 'y' for confirmation
+    print_info "Running /root/inkon/node/setup.sh and automatically responding with 'y'."
+    echo "y" | sudo bash /root/inkon/node/setup.sh
+    print_info "setup.sh completed with automatic 'y' confirmation."
 
+    # Call the uni_menu function to display the menu
+    master
+}
 
 
 
@@ -166,7 +174,8 @@ master() {
     print_info ""
     print_info "1. Install-Dependency"
     print_info "2. Inkon-Setup"
-    print_info "3. Exit"
+    print-info "3. Snapshot-Setup"
+    print_info "4. Exit"
     print_info ""
     print_info "==============================="
     print_info " Created By : CB-Master "
@@ -183,6 +192,9 @@ master() {
             setup
             ;;
         3) 
+            snapshot
+            ;;
+        4)
             exit 0  # Exit the script after breaking the loop
             ;;
         *)
