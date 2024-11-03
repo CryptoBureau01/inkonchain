@@ -56,6 +56,7 @@ install_dependency() {
     print_info "<=========== Install Dependency ==============>"
     print_info "Updating and upgrading system packages, and installing curl..."
     sudo apt update && sudo apt upgrade -y && sudo apt install git wget curl -y 
+    sudo apt install -y apt-transport-https ca-certificates curl gnupg lsb-release
 
     # Check if Docker is install
     print_info "Installing Docker..."
