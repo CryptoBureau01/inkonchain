@@ -132,7 +132,13 @@ setup() {
     # Step 4: Update .env.ink-sepolia file with the required values
     sudo sed -i 's|L1_RPC_URL=.*|L1_RPC_URL="https://ethereum-sepolia-rpc.publicnode.com"|' .env.ink-sepolia
     sudo sed -i 's|L1_BEACON_URL=.*|L1_BEACON_URL="https://ethereum-sepolia-beacon-api.publicnode.com"|' .env.ink-sepolia
-    print_info ".env.ink-sepolia file updated with new L1_RPC_URL and L1_BEACON_URL values."
+    
+    # Update port numbers in .env.ink-sepolia file
+    sudo sed -i 's|8545|8540|g' .env.ink-sepolia
+    sudo sed -i 's|8546|8541|g' .env.ink-sepolia
+    sudo sed -i 's|9545|9548|g' .env.ink-sepolia
+    sudo sed -i 's|9222|9228|g' .env.ink-sepolia
+    print_info ".env.ink-sepolia file updated with new L1_RPC_URL, L1_BEACON_URL, and port numbers."
 
     # Step 5: Update docker-compose.yml with new port mappings
     sudo sed -i 's|8545:8545|8540:8540|' docker-compose.yml
@@ -245,7 +251,7 @@ check_block() {
     print_info "Checking the current block number of the Ethereum node..."
 
     # Execute the curl command to get the block number
-    block_number=$(curl -s http://localhost:8545 -X POST \
+    block_number=$(curl -s http://localhost:8540 -X POST \
         -H "Content-Type: application/json" \
         --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params": [],"id":1}' | \
         jq -r .result | sed 's/^0x//' | awk '{printf "%d\n", "0x" $0}')
@@ -262,7 +268,7 @@ check_block() {
 
 check_finalized_block() {
     # Retrieve the local finalized block number
-    local_block=$(curl -s -X POST http://localhost:8545 -H "Content-Type: application/json" \
+    local_block=$(curl -s -X POST http://localhost:8540 -H "Content-Type: application/json" \
         --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["finalized", false],"id":1}' \
         | jq -r .result.number | sed 's/^0x//' | awk '{printf "%d\n", "0x" $0}')
 
