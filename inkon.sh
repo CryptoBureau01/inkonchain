@@ -147,20 +147,133 @@ snapshot() {
     echo "y" | sudo bash /root/inkon/node/setup.sh
     print_info "setup.sh completed with automatic 'y' confirmation."
 
-    # Call the uni_menu function to display the menu
+    print_info "Now we are preparing snapshot setup. Please wait for 5 seconds..."
+    sleep 5  # Wait for 5 seconds
+
+    # Run the setup.sh file and automatically press 'n' for confirmation
+    print_info "Running /root/inkon/node/setup.sh and automatically responding with 'n'."
+    echo "n" | sudo bash /root/inkon/node/setup.sh
+    print_info "setup.sh completed with automatic 'n' confirmation."
+
+    print_info "Now Snapshot completely setup!"
+
+    # Call the master function to display the menu
+    master
+}
+
+
+
+start_node() {
+    # Start the node using Docker Compose
+    print_info "Starting the node using Docker Compose..."
+    sudo docker compose up -d
+
+    # Check if the node started successfully
+    if [ $? -eq 0 ]; then
+        print_info "Node started successfully!"
+    else
+        print_info "Failed to start the node. Please check the Docker logs."
+    fi
+
+    # Call the master function to display the menu
     master
 }
 
 
 
 
+stop_node() {
+    # Stop the node using Docker Compose
+    print_info "Stopping the node using Docker Compose..."
+    sudo docker compose down
+
+    # Check if the node stopped successfully
+    if [ $? -eq 0 ]; then
+        print_info "Node stopped successfully!"
+    else
+        print_info "Failed to stop the node. Please check the Docker logs."
+    fi
+
+    # Call the master function to display the menu
+    master
+}
+
+
+
+sync_status() {
+    # Check the sync status of the Optimism node
+    print_info "Checking the sync status of the Optimism node..."
+
+    # Execute the curl command and get the output
+    sync_output=$(curl -s -X POST -H "Content-Type: application/json" --data \
+        '{"jsonrpc":"2.0","method":"optimism_syncStatus","params":[],"id":1}' \
+        http://localhost:9545 | jq -r '.result.syncing')
+
+    # Display the sync status
+    if [ "$sync_output" == "true" ]; then
+        print_info "The node is currently syncing."
+    elif [ "$sync_output" == "false" ]; then
+        print_info "The node is fully synced."
+    else
+        print_info "Unable to determine the sync status. Response: $sync_output"
+    fi
+
+    # Call the master function to display the menu
+    master
+}
+
+
+
+check_block() {
+    # Check the current block number of the Ethereum node
+    print_info "Checking the current block number of the Ethereum node..."
+
+    # Execute the curl command to get the block number
+    block_number=$(curl -s http://localhost:8545 -X POST \
+        -H "Content-Type: application/json" \
+        --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params": [],"id":1}' | \
+        jq -r .result | sed 's/^0x//' | awk '{printf "%d\n", "0x" $0}')
+
+    # Display the block number
+    print_info "Current Block Number: $block_number"
+
+    # Call the master function to display the menu
+    master
+}
 
 
 
 
+check_finalized_block() {
+    # Retrieve the local finalized block number
+    local_block=$(curl -s -X POST http://localhost:8545 -H "Content-Type: application/json" \
+        --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["finalized", false],"id":1}' \
+        | jq -r .result.number | sed 's/^0x//' | awk '{printf "%d\n", "0x" $0}')
+
+    # Retrieve the remote finalized block number
+    remote_block=$(curl -s -X POST https://rpc-gel-sepolia.inkonchain.com/ -H "Content-Type: application/json" \
+        --data '{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["finalized", false],"id":1}' \
+        | jq -r .result.number | sed 's/^0x//' | awk '{printf "%d\n", "0x" $0}')
+
+    # Print both block numbers
+    print_info "Local finalized block: $local_block"
+    print_info "Remote finalized block: $remote_block"
+
+    # Call the master function to display the menu
+    master
+}
 
 
 
+
+logs_check() {
+    # Check the logs of the Docker container and print the last 100 lines
+    print_info "Fetching the last 100 lines of Docker logs..."
+    sudo docker compose logs -f | head -n 100
+
+    # Call the master function to display the menu
+    master
+}
 
 
 
@@ -174,8 +287,14 @@ master() {
     print_info ""
     print_info "1. Install-Dependency"
     print_info "2. Inkon-Setup"
-    print-info "3. Snapshot-Setup"
-    print_info "4. Exit"
+    print_info "3. Snapshot-Setup"
+    print_info "4. Start-Node"
+    print_info "5. Sync-Status"
+    print_info "6. Check-Block"
+    print_info "7. Final-Blocks"
+    print_info "8. Logs-Checker"
+    print_info "9. Stop-Node"
+    print_info "10. Exit"
     print_info ""
     print_info "==============================="
     print_info " Created By : CB-Master "
@@ -195,6 +314,25 @@ master() {
             snapshot
             ;;
         4)
+            start_node
+            ;;
+        5)
+            sync_status
+            ;;
+        6) 
+            check_block
+            ;;
+        7)
+            check_finalized_block
+            ;;
+        8)
+            logs_check
+            ;;
+        9)  
+            stop_node
+            ;;
+        10)
+            
             exit 0  # Exit the script after breaking the loop
             ;;
         *)
