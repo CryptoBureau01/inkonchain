@@ -131,10 +131,25 @@ setup() {
     # Step 4: Update .env.ink-sepolia file with the required values
     sudo sed -i 's|L1_RPC_URL=.*|L1_RPC_URL="https://ethereum-sepolia-rpc.publicnode.com"|' .env.ink-sepolia
     sudo sed -i 's|L1_BEACON_URL=.*|L1_BEACON_URL="https://ethereum-sepolia-beacon-api.publicnode.com"|' .env.ink-sepolia
-
     print_info ".env.ink-sepolia file updated with new L1_RPC_URL and L1_BEACON_URL values."
 
-    # Call the uni_menu function to display the menu
+    # Step 5: Update docker-compose.yml with new port mappings
+    sudo sed -i 's|8545:8545|8540:8540|' docker-compose.yml
+    sudo sed -i 's|8546:8546|8541:8541|' docker-compose.yml
+    sudo sed -i 's|9545:9545|9548:9548|' docker-compose.yml
+    sudo sed -i 's|9222:9222|9228:9228|' docker-compose.yml
+    print_info "docker-compose.yml updated with new port mappings."
+
+    # Step 6: Allow new ports in UFW and enable UFW
+    sudo ufw allow 8540
+    sudo ufw allow 8541
+    sudo ufw allow 9548
+    sudo ufw allow 9228
+    sudo ufw allow 9228/udp
+    sudo ufw enable
+    print_info "Ports 8540, 8541, 9548, 9228 (TCP and UDP) allowed in UFW and UFW enabled."
+
+    # Call the master function to display the menu
     master
 }
 
@@ -207,7 +222,7 @@ sync_status() {
     # Execute the curl command and get the output
     sync_output=$(curl -s -X POST -H "Content-Type: application/json" --data \
         '{"jsonrpc":"2.0","method":"optimism_syncStatus","params":[],"id":1}' \
-        http://localhost:9545 | jq -r '.result.syncing')
+        http://localhost:9548 | jq -r '.result.syncing')
 
     # Display the sync status
     if [ "$sync_output" == "true" ]; then
