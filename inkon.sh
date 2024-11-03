@@ -301,7 +301,7 @@ master() {
     print_info "==============================="
     print_info ""
     
-    read -p "Enter your choice (1 or 3): " user_choice
+    read -p "Enter your choice (1 or 10): " user_choice
 
     case $user_choice in
         1)
@@ -336,7 +336,7 @@ master() {
             exit 0  # Exit the script after breaking the loop
             ;;
         *)
-            print_error "Invalid choice. Please enter 1 or 3 : "
+            print_error "Invalid choice. Please enter 1 or 10 : "
             ;;
     esac
 }
