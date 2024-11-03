@@ -136,8 +136,8 @@ setup() {
     # Step 5: Update docker-compose.yml with new port mappings
     sudo sed -i 's|8545:8545|8540:8540|' docker-compose.yml
     sudo sed -i 's|8546:8546|8541:8541|' docker-compose.yml
-    sudo sed -i 's|9545:9545|9548:9548|' docker-compose.yml
-    sudo sed -i 's|9222:9222|9228:9228|' docker-compose.yml
+    sudo sed -i 's|9545:9545|9548:9545|' docker-compose.yml
+    sudo sed -i 's|9222:9222|9228:9222|' docker-compose.yml
     print_info "docker-compose.yml updated with new port mappings."
 
     # Step 6: Allow new ports in UFW and enable UFW
