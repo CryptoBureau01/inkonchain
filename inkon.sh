@@ -309,21 +309,20 @@ master() {
     print_info ""
     print_info "1. Install-Dependency"
     print_info "2. Inkon-Setup"
-    print_info "3. Snapshot-Setup"
+    print_info "3. SnapShot-Setup"
     print_info "4. Start-Node"
-    print_info "5. Sync-Status"
-    print_info "6. Check-Block"
-    print_info "7. Final-Blocks"
-    print_info "8. Logs-Checker"
-    print_info "9. Stop-Node"
-    print_info "10. Exit"
+    print_info "5. Check-Block"
+    print_info "6. Final-Blocks"
+    print_info "7. Logs-Checker"
+    print_info "8. Stop-Node"
+    print_info "9. Exit"
     print_info ""
     print_info "==============================="
     print_info " Created By : CB-Master "
     print_info "==============================="
     print_info ""
     
-    read -p "Enter your choice (1 or 10): " user_choice
+    read -p "Enter your choice (1 or 9): " user_choice
 
     case $user_choice in
         1)
@@ -339,26 +338,23 @@ master() {
             start_node
             ;;
         5)
-            sync_status
-            ;;
-        6) 
             check_block
             ;;
-        7)
+        6)
             check_finalized_block
             ;;
-        8)
+        7)
             logs_check
             ;;
-        9)  
+        8)  
             stop_node
             ;;
-        10)
+        9)
             
             exit 0  # Exit the script after breaking the loop
             ;;
         *)
-            print_error "Invalid choice. Please enter 1 or 10 : "
+            print_error "Invalid choice. Please enter 1 or 9 : "
             ;;
     esac
 }
