@@ -136,25 +136,29 @@ setup() {
     # Update port numbers in .env.ink-sepolia file
     sudo sed -i 's|8545|8540|g' .env.ink-sepolia
     sudo sed -i 's|8546|8541|g' .env.ink-sepolia
-    sudo sed -i 's|9545|9548|g' .env.ink-sepolia
-    sudo sed -i 's|9222|9228|g' .env.ink-sepolia
+    sudo sed -i 's|9545|9540|g' .env.ink-sepolia
+    sudo sed -i 's|9222|9220|g' .env.ink-sepolia
     print_info ".env.ink-sepolia file updated with new L1_RPC_URL, L1_BEACON_URL, and port numbers."
 
     # Step 5: Update docker-compose.yml with new port mappings
     sudo sed -i 's|8545:8545|8540:8540|' docker-compose.yml
+    sudo sed -i 's|30303:30303|30308:30308|' docker-compose.yml
     sudo sed -i 's|8546:8546|8541:8541|' docker-compose.yml
-    sudo sed -i 's|9545:9545|9548:9545|' docker-compose.yml
-    sudo sed -i 's|9222:9222|9228:9222|' docker-compose.yml
+    sudo sed -i 's|9545:9545|9540:9545|' docker-compose.yml
+    sudo sed -i 's|9222:9222|9220:9222|' docker-compose.yml
     print_info "docker-compose.yml updated with new port mappings."
 
     # Step 6: Allow new ports in UFW and enable UFW
     sudo ufw allow 8540
     sudo ufw allow 8541
-    sudo ufw allow 9548
-    sudo ufw allow 9228
-    sudo ufw allow 9228/udp
+    sudo ufw allow 9540
+    sudo ufw allow 9220
+    sudo ufw allow 9220/udp
+    sudo ufw allow 30308
+    sudo ufw allow 30308/udp
+    
     sudo ufw enable
-    print_info "Ports 8540, 8541, 9548, 9228 (TCP and UDP) allowed in UFW and UFW enabled."
+    print_info "Ports 8540, 8541, 9540, 9220 (TCP and UDP) allowed in UFW and UFW enabled."
 
     # Call the master function to display the menu
     master
@@ -286,6 +290,59 @@ check_finalized_block() {
 }
 
 
+check_private_key() {
+    # Define the path to the private key file
+    PRIVATE_KEY_FILE="/root/inkon/node/var/secrets/jwt.txt"
+    
+    # Check if the file exists
+    if [[ -f "$PRIVATE_KEY_FILE" ]]; then
+        # Read and display the private key
+        PRIVATE_KEY=$(cat "$PRIVATE_KEY_FILE")
+        print_info "Private Key: $PRIVATE_KEY"
+    else
+        print_error "Private key file not found at $PRIVATE_KEY_FILE"
+    fi
+
+    # Call the master function to display the menu
+    master
+}
+
+import_private_key() {
+    # Define the path to the private key file
+    PRIVATE_KEY_FILE="/root/inkon/node/var/secrets/jwt.txt"
+    
+    # Check if the private key file already exists and has content
+    if [[ -f "$PRIVATE_KEY_FILE" && -s "$PRIVATE_KEY_FILE" ]]; then
+        # Display the existing key and prompt the user for confirmation
+        echo "A private key already exists in $PRIVATE_KEY_FILE."
+        read -p "Do you want to overwrite the existing private key? (y/n): " confirm
+        
+        if [[ "$confirm" != "y" ]]; then
+            print_info "Operation cancelled. Existing private key was not modified."
+            return
+        fi
+        
+        # Remove the old private key if the user chose to overwrite
+        rm -f "$PRIVATE_KEY_FILE"
+        print_info "Old private key deleted."
+    fi
+
+    # Prompt the user to enter a new private key with 0x prefix
+    read -p "Please enter your new private key (starting with 0x): " USER_PRIVATE_KEY
+
+    # Validate that the private key starts with "0x"
+    if [[ "$USER_PRIVATE_KEY" == 0x* ]]; then
+        # Save the new private key to the file
+        echo "$USER_PRIVATE_KEY" > "$PRIVATE_KEY_FILE"
+        print_info "New private key has been successfully saved to $PRIVATE_KEY_FILE"
+    else
+        print_error "Invalid input: Private key must start with '0x'."
+    fi
+
+    # Call the master function to display the menu
+    master
+}
+
 
 
 logs_check() {
@@ -311,18 +368,20 @@ master() {
     print_info "2. Inkon-Setup"
     print_info "3. SnapShot-Setup"
     print_info "4. Start-Node"
-    print_info "5. Check-Block"
-    print_info "6. Final-Blocks"
-    print_info "7. Logs-Checker"
-    print_info "8. Stop-Node"
-    print_info "9. Exit"
+    print_info "5. Check-Private-Key"
+    print_info "6. Import-Private-Key"
+    print_info "7. Check-Block"
+    print_info "8. Final-Blocks"
+    print_info "9. Logs-Checker"
+    print_info "10. Stop-Node"
+    print_info "11. Exit"
     print_info ""
     print_info "==============================="
     print_info " Created By : CB-Master "
     print_info "==============================="
     print_info ""
     
-    read -p "Enter your choice (1 or 9): " user_choice
+    read -p "Enter your choice (1 or 10): " user_choice
 
     case $user_choice in
         1)
@@ -338,23 +397,28 @@ master() {
             start_node
             ;;
         5)
-            check_block
+            check_private_key
             ;;
         6)
-            check_finalized_block
+            import_private_key
             ;;
         7)
-            logs_check
+            check_block
             ;;
-        8)  
-            stop_node
+        8)
+            check_finalized_block
             ;;
         9)
-            
+            logs_check
+            ;;
+        10)  
+            stop_node
+            ;;
+        11)
             exit 0  # Exit the script after breaking the loop
             ;;
         *)
-            print_error "Invalid choice. Please enter 1 or 9 : "
+            print_error "Invalid choice. Please enter 1 or 10 : "
             ;;
     esac
 }
