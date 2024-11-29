@@ -49,13 +49,11 @@ master_fun() {
 }
 
 
-
-
 # Function to install dependencies
 install_dependency() {
     print_info "<=========== Install Dependency ==============>"
     print_info "Updating and upgrading system packages, and installing curl..."
-    sudo apt update && sudo apt upgrade -y && sudo apt install git wget curl -y 
+    sudo apt update && sudo apt upgrade -y && sudo apt install git wget jq curl -y 
     sudo apt install -y apt-transport-https ca-certificates curl gnupg lsb-release
 
     # Check if Docker is install
@@ -112,9 +110,6 @@ install_dependency() {
     master
 }
 
-
-
-
 setup() {
     # Step 1: Create /root/inkon folder
     mkdir -p /root/inkon
@@ -164,9 +159,6 @@ setup() {
     master
 }
 
-
-
-
 snapshot() {
     # Run the setup.sh file and automatically press 'y' for confirmation
     print_info "Running /root/inkon/node/setup.sh and automatically responding with 'y'."
@@ -187,44 +179,60 @@ snapshot() {
     master
 }
 
-
-
 start_node() {
-    # Start the node using Docker Compose
-    print_info "Starting the node using Docker Compose..."
-    sudo docker compose up -d
+    INKON_DIR="/root/inkon"
 
-    # Check if the node started successfully
-    if [ $? -eq 0 ]; then
-        print_info "Node started successfully!"
+    if [ -d "$INKON_DIR" ]; then
+        echo "Directory $INKON_DIR exists."
+        cd "$INKON_DIR"
+
+        # Pull the latest updates from the repository
+        git pull
+
+        # Start the node using Docker Compose
+        print_info "Starting the node using Docker Compose..."
+        sudo docker-compose up -d
+
+        # Check if the node started successfully
+        if [ $? -eq 0 ]; then
+            print_info "Node started successfully!"
+        else
+            print_error "Failed to start the node. Please check the Docker logs."
+        fi
     else
-        print_info "Failed to start the node. Please check the Docker logs."
+        echo "Error: Directory $INKON_DIR does not exist."
+        exit 1
     fi
 
     # Call the master function to display the menu
     master
 }
-
-
-
 
 stop_node() {
-    # Stop the node using Docker Compose
-    print_info "Stopping the node using Docker Compose..."
-    sudo docker compose down
+    INKON_DIR="/root/inkon"
 
-    # Check if the node stopped successfully
-    if [ $? -eq 0 ]; then
-        print_info "Node stopped successfully!"
+    if [ -d "$INKON_DIR" ]; then
+        echo "Directory $INKON_DIR exists."
+        cd "$INKON_DIR"
+
+        # Stop the node using Docker Compose
+        print_info "Stopping the node using Docker Compose..."
+        sudo docker-compose down
+
+        # Check if the node stopped successfully
+        if [ $? -eq 0 ]; then
+            print_info "Node stopped successfully!"
+        else
+            print_error "Failed to stop the node. Please check the Docker logs."
+        fi
     else
-        print_info "Failed to stop the node. Please check the Docker logs."
+        echo "Error: Directory $INKON_DIR does not exist."
+        exit 1
     fi
 
     # Call the master function to display the menu
     master
 }
-
-
 
 sync_status() {
     # Check the sync status of the Optimism node
@@ -249,7 +257,6 @@ sync_status() {
 }
 
 
-
 check_block() {
     # Check the current block number of the Ethereum node
     print_info "Checking the current block number of the Ethereum node..."
@@ -266,8 +273,6 @@ check_block() {
     # Call the master function to display the menu
     master
 }
-
-
 
 
 check_finalized_block() {
